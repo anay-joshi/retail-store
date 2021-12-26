@@ -109,12 +109,21 @@ class CartViewSet(viewsets.ModelViewSet):
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
+
 class CartItemViewSet(viewsets.ModelViewSet):
+    """
+    Endpoint to view all carts
+    """ 
 
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
 
+
 class OrderViewSet(viewsets.ModelViewSet):
+
+    """
+    Endpoint to view all order related functionalities
+    """
 
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -161,6 +170,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    """
+    Endpoint to view complete order history
+    """
+
     @action(detail=False, url_path="order_history/(?P<customer_id>[0-9])")
     def order_history(self, request, customer_id):
 
@@ -175,14 +188,21 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-
 class OrderItemViewSet(viewsets.ModelViewSet):
 
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
 
+
 class AnalyticsViewSet(viewsets.GenericViewSet):
 
+    """
+    Endpoint for questions 3 and 4
+    """
+
+    """
+    1. No of transactions with option of adding date range
+    """
     @action(detail=False, url_path="total_orders")
     def total_transactions(self, request):
         # print(request.data)
@@ -195,7 +215,9 @@ class AnalyticsViewSet(viewsets.GenericViewSet):
             
         return Response({'Total Number of Orders ':count})
 
-
+    """
+    2. Fetching total quantity of all items sold with options of adding date range
+    """
     @action(detail=False, url_path="total_quantity_sold")
     def total_quantity(self, request):
         orderitems = OrderItem.objects.all()    
@@ -215,7 +237,9 @@ class AnalyticsViewSet(viewsets.GenericViewSet):
 
         return Response({'Total Quantity of items sold ':quantity})
 
-
+    """
+    3. total quantity sold for each item with option of adding date range
+    """
     @action(detail=False, url_path="per_item_quantity_sold")
     def per_item_quantity(self, request):
         orderitems = OrderItem.objects.all()
@@ -235,7 +259,9 @@ class AnalyticsViewSet(viewsets.GenericViewSet):
 
         return Response(response)
 
-
+    """
+    4. total quantity sold in each item category with option of adding date range
+    """
     @action(detail=False, url_path="per_category_item_quantity_sold")
     def per_category_quantity(self, request):
         orderitems = OrderItem.objects.all()
@@ -255,6 +281,10 @@ class AnalyticsViewSet(viewsets.GenericViewSet):
 
         return Response(response)
 
+
+    """
+    5. total sales amount with option of adding date range
+    """
     @action(detail=False, url_path="total_amount")
     def total_amount(self, request):
         orders=Order.objects.all()
