@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .models import *
 from .serializers import *
+from datetime import datetime
 
-
+from collections import defaultdict
 class CategoryViewSet(viewsets.ModelViewSet):
     """
     Endpoint to view or edit categories
@@ -179,4 +180,111 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
+
+class AnalyticsViewSet(viewsets.GenericViewSet):
+
+    @action(detail=False, url_path="total_orders")
+    def total_transactions(self, request):
+        # print(request.data)
+        if not request.data or ( not request.data['start_date'] ) or ( not request.data['end_date']): 
+            count = Order.objects.all().count()    
+        else:
+            start_date=request.data['start_date']
+            end_date=request.data['end_date']
+            count = Order.objects.filter(created_at__range=[start_date,end_date]).count()
+            
+        return Response({'Total Number of Orders ':count})
+
+
+    @action(detail=False, url_path="total_quantity_sold")
+    def total_quantity(self, request):
+        orderitems = OrderItem.objects.all()    
+        quantity=0
+
+        if not request.data or ( not request.data['start_date'] ) or ( not request.data['end_date']):        
+            for item in orderitems:
+                quantity += item.quantity
+
+        else:
+            start_date=request.data['start_date']
+            end_date=request.data['end_date']
+            for item in orderitems: 
+                # print(start_date,str(item.order.created_at) , end_date)
+                if start_date <= str(item.order.created_at)  <= end_date:
+                    quantity += item.quantity
+
+        return Response({'Total Quantity of items sold ':quantity})
+
+
+    @action(detail=False, url_path="per_item_quantity_sold")
+    def per_item_quantity(self, request):
+        orderitems = OrderItem.objects.all()
+        response={}
+
+        if not request.data or ( not request.data['start_date'] ) or ( not request.data['end_date']):
+            for item in orderitems:
+                response[item.product.name] = item.quantity
+        
+        else:
+            start_date=request.data['start_date']
+            end_date=request.data['end_date']
+            for item in orderitems: 
+                # print(start_date,str(item.order.created_at) , end_date)
+                if start_date <= str(item.order.created_at)  <= end_date:
+                    response[item.product.name] = item.quantity
+
+        return Response(response)
+
+
+    @action(detail=False, url_path="per_category_item_quantity_sold")
+    def per_category_quantity(self, request):
+        orderitems = OrderItem.objects.all()
+        response= defaultdict(lambda: 0)
+
+        if not request.data or ( not request.data['start_date'] ) or ( not request.data['end_date']):
+            for item in orderitems:
+                response[str(item.product.category)] += 1
+
+        else:
+            start_date=request.data['start_date']
+            end_date=request.data['end_date']
+            for item in orderitems: 
+                # print(start_date,str(item.order.created_at) , end_date)
+                if start_date <= str(item.order.created_at)  <= end_date:
+                    response[str(item.product.category)] += 1
+
+        return Response(response)
+
+    @action(detail=False, url_path="total_amount")
+    def total_amount(self, request):
+        orders=Order.objects.all()
+        total_amount=0
+        response= {}
+
+        if not request.data or ( not request.data['start_date'] ) or ( not request.data['end_date']):
+            for order in orders:
+                k="Sale amount of order no. : %s" % (order.id)
+                response[k]=order.total
+                total_amount += order.total
+        
+        else:
+            start_date=request.data['start_date']
+            end_date=request.data['end_date']
+            for order in orders:
+                # print(start_date,str(item.order.created_at) , end_date)
+                if start_date <= str(order.created_at)  <= end_date:
+                    k="Sale amount of order no. : %s" % (order.id)
+                    response[k]=order.total
+                    total_amount += order.total
+
+        response["Total Sales Amount"]=total_amount
+        return Response(response)
+
+    
+                                
+        
+        
+
+
+
 

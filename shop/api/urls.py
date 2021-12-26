@@ -6,12 +6,13 @@ app_name='api'
 router = routers.SimpleRouter()
 
 router = router = routers.SimpleRouter()
-router.register('categories', CategoryViewSet)
-router.register('products', ProductViewSet)
-router.register('carts', CartViewSet)
-router.register('cart_items', CartItemViewSet)
-router.register('orders', OrderViewSet)
-router.register('order_items', OrderItemViewSet)
+router.register('categories', CategoryViewSet, 'categories')
+router.register('products', ProductViewSet, 'products')
+router.register('carts', CartViewSet, 'carts')
+router.register('cart_items', CartItemViewSet, 'cart_items')
+router.register('orders', OrderViewSet, 'orders')
+router.register('order_items', OrderItemViewSet,'order_items')
+router.register('analytics', AnalyticsViewSet, 'analytics')
 
 urlpatterns = [
     path('', include((router.urls, app_name)))
